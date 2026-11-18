@@ -1,10 +1,10 @@
 {
 	"id": "password-manager",
 	"name": "Password Manager",
-	"version": "1.0.12",
+	"version": "1.0.13",
 	"minAppVersion": "1.8.7",
 	"description": "A lightweight local password manager with encryption, backup, trash, and import/export support.",
-	"author": "PandaNocturne",
-	"authorUrl": "https://github.com/PandaNocturne",
+	"author": "TingHua1",
+	"authorUrl": "https://github.com/TingHua1",
 	"isDesktopOnly": false
 }
