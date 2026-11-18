@@ -28,9 +28,14 @@ export default class PasswordManagerPlugin extends Plugin {
 
   async onload() {
     this.initializeDependencies();
-    await this.context.loadPluginData();
     this.registerEntrypoints();
-    await this.transferService.syncLibraryMarkdownExport();
+
+    try {
+      await this.context.loadPluginData();
+      await this.transferService.syncLibraryMarkdownExport();
+    } catch (error) {
+      console.error('Password Manager Android initialization failed.', error);
+    }
   }
 
   private initializeDependencies() {
