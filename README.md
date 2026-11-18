@@ -1,4 +1,4 @@
-# Obsidian Password Manager
+# Obsidian Password Manager Android
 
 [中文文档](./README.zh-CN.md)
 
@@ -8,7 +8,7 @@
 
 ## 📖 Introduction
 
-**Obsidian Password Manager** is a lightweight password management plugin for Obsidian, designed for storing and organizing daily-use credentials directly inside your vault.
+**Obsidian Password Manager Android** is a lightweight password management plugin for Obsidian, designed for storing and organizing daily-use credentials directly inside your vault.
 
 It uses a JSON-based data structure and provides a three-column management interface that allows quick switching between groups, entries, and details. For common scenarios such as website accounts, software logins, and simple key records, this approach is lighter and easier to manage alongside your notes.
 

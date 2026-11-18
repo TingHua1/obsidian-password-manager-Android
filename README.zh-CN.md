@@ -1,4 +1,4 @@
-# Obsidian Password Manager
+# Obsidian Password Manager Android
 
 [English README](./README.md)
 
@@ -8,7 +8,7 @@
 
 ## 📖 简介
 
-**Obsidian Password Manager** 是一款用于 Obsidian 的轻量密码管理插件，适合在笔记库中集中保存和整理日常使用的账号密码信息。
+**Obsidian Password Manager Android** 是一款用于 Obsidian 的轻量密码管理插件，适合在笔记库中集中保存和整理日常使用的账号密码信息。
 
 插件使用 JSON 结构存储数据，并提供三栏管理界面，便于在分组、条目和详情之间快速切换。对于常见的网站账号、软件登录信息、简单密钥记录等场景，这种方式更轻量，也更方便和笔记一起管理。
 
