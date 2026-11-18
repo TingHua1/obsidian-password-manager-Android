@@ -61,7 +61,9 @@ npm run dev
 
 ## 👏 Acknowledgments
 
-Developed by [PandaNocturne](https://github.com/PandaNocturne).
+This project is based on the original [Obsidian Password Manager](https://github.com/PandaNocturne/obsidian-password-manager) by [PandaNocturne](https://github.com/PandaNocturne).
+
+It adds Android compatibility while preserving the original cross-platform encrypted data format.
 
 ## 📄 License
 

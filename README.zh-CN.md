@@ -62,7 +62,9 @@ npm run dev
 
 ## 👏 鸣谢
 
-Developed by [PandaNocturne](https://github.com/PandaNocturne).
+本项目基于 [PandaNocturne](https://github.com/PandaNocturne) 的原项目 [Obsidian Password Manager](https://github.com/PandaNocturne/obsidian-password-manager) 开发。
+
+在保留原有跨端加密数据格式的基础上，本项目增加了 Android 兼容性。
 
 ## 📄 许可证
 
