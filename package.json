@@ -1,5 +1,5 @@
 {
-	"name": "password-manager",
+	"name": "password-manager-android",
 	"version": "1.0.13",
 	"description": "A lightweight local password manager for Obsidian with encryption, backup, trash, and import/export support.",
 	"main": "main.js",

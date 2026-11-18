@@ -33,7 +33,7 @@ It uses a JSON-based data structure and provides a three-column management inter
 
 ### Local manual installation
 
-- Download the latest `main.js`, `manifest.json`, and `styles.css` into your vault's `.obsidian/plugins/password-manager/` folder.
+- Download the latest `main.js`, `manifest.json`, and `styles.css` into your vault's `.obsidian/plugins/password-manager-android/` folder.
 - Restart Obsidian and enable the plugin.
 
 ## 🔒 Security Notes

@@ -33,7 +33,7 @@
 
 ### 本地手动安装
 
-- 下载最新 `main.js`, `manifest.json`, `styles.css` 到库目录 `.obsidian/plugins/password-manager/`。
+- 下载最新 `main.js`, `manifest.json`, `styles.css` 到库目录 `.obsidian/plugins/password-manager-android/`。
 - 重启 Obsidian 并启用插件。
 
 ## 🔒 安全说明
