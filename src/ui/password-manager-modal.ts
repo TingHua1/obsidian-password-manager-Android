@@ -1,4 +1,4 @@
-import { App, Menu, Modal, Notice, Scope, setIcon } from 'obsidian';
+import { App, Menu, Modal, Notice, Platform, Scope, setIcon } from 'obsidian';
 import type PasswordManagerPlugin from '../main';
 import { PWM_TEXT, formatPWMText } from '../lang';
 import { matchesAllKeywordsInValue, matchesAnyFieldKeywords, parseSearchKeywords } from '../util/search';
@@ -122,6 +122,7 @@ export class PasswordManagerModal extends Modal {
     this.plugin.registerManagerModal(this);
     this.titleEl.setText(PWM_TEXT.MODAL_TITLE);
     applyPwmModalClass(this.modalEl);
+    this.modalEl.toggleClass('pwm-phone-layout', Platform.isPhone);
     this.observeViewportLayout();
     this.applyModalSize();
     this.contentEl.tabIndex = -1;
@@ -148,6 +149,7 @@ export class PasswordManagerModal extends Modal {
     this.searchActionsEl = null;
     this.titleCountEl = null;
     this.titleEl.parentElement?.removeClass('pwm-modal-title-row');
+    this.modalEl.removeClass('pwm-phone-layout');
     clearPwmModalShell(this.modalEl);
     this.ensureScrollRefsCleared();
     this.contentEl.empty();
@@ -188,15 +190,18 @@ export class PasswordManagerModal extends Modal {
     });
   }
 
-  /** Viewport width is also reliable when Android reports a desktop-like platform. */
+  /**
+   * Phones always use the single-pane flow, including in landscape. The width
+   * fallback preserves a usable narrow layout on desktops and tablets.
+   */
   private isMobileViewport() {
-    return window.matchMedia('(max-width: 599px)').matches;
+    return Platform.isPhone || window.matchMedia('(max-width: 599px)').matches;
   }
 
   private observeViewportLayout() {
     const mediaQuery = window.matchMedia('(max-width: 599px)');
     const updateLayout = () => {
-      const isMobile = mediaQuery.matches;
+      const isMobile = this.isMobileViewport();
       if (isMobile && !this.isMobileViewportActive) {
         // A phone always starts from the group index. Search is the one useful
         // exception because the filtered group list is already the result view.
