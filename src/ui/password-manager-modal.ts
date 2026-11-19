@@ -150,6 +150,7 @@ export class PasswordManagerModal extends Modal {
     this.titleCountEl = null;
     this.titleEl.parentElement?.removeClass('pwm-modal-title-row');
     this.modalEl.removeClass('pwm-phone-layout');
+    this.modalEl.removeClass('pwm-mobile-layout');
     clearPwmModalShell(this.modalEl);
     this.ensureScrollRefsCleared();
     this.contentEl.empty();
@@ -173,10 +174,10 @@ export class PasswordManagerModal extends Modal {
   private applyModalSize() {
     if (this.isMobileViewport()) {
       setCssProps(this.modalEl, {
-        width: 'calc(100vw - 16px)',
-        'max-width': 'calc(100vw - 16px)',
-        height: 'calc(100dvh - 16px)',
-        'max-height': 'calc(100dvh - 16px)',
+        width: 'calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 32px)',
+        'max-width': 'calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 32px)',
+        height: 'calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 32px)',
+        'max-height': 'calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 32px)',
       });
       return;
     }
@@ -208,6 +209,7 @@ export class PasswordManagerModal extends Modal {
         this.mobilePane = this.keyword.trim() ? 'items' : 'groups';
       }
       this.isMobileViewportActive = isMobile;
+      this.modalEl.toggleClass('pwm-mobile-layout', isMobile);
       this.applyModalSize();
       if (this.rootEl) {
         this.render();
@@ -1414,20 +1416,22 @@ export class PasswordManagerModal extends Modal {
     const footer = container.createDiv({ cls: 'pwm-footer-actions pwm-details-bottom-toolbar' });
     footer.createDiv({ cls: 'pwm-footer-spacer' });
 
-    const ratioLockButton = this.plugin.createIconButton(
-      footer,
-      this.plugin.pluginConfig.columnRatioLocked ? 'lock' : 'unlock',
-      this.plugin.pluginConfig.columnRatioLocked ? PWM_TEXT.COLUMN_RATIO_UNLOCK : PWM_TEXT.COLUMN_RATIO_LOCK,
-      async () => {
-        this.plugin.updatePluginConfig({ columnRatioLocked: !this.plugin.pluginConfig.columnRatioLocked });
-        await this.plugin.savePluginConfig();
-        if (this.rootEl) {
-          this.applyLayoutWidths(this.rootEl);
-        }
-        this.render();
-      },
-    );
-    ratioLockButton.toggleClass('pwm-button-success', !this.plugin.pluginConfig.columnRatioLocked);
+    if (!this.isMobileViewport()) {
+      const ratioLockButton = this.plugin.createIconButton(
+        footer,
+        this.plugin.pluginConfig.columnRatioLocked ? 'lock' : 'unlock',
+        this.plugin.pluginConfig.columnRatioLocked ? PWM_TEXT.COLUMN_RATIO_UNLOCK : PWM_TEXT.COLUMN_RATIO_LOCK,
+        async () => {
+          this.plugin.updatePluginConfig({ columnRatioLocked: !this.plugin.pluginConfig.columnRatioLocked });
+          await this.plugin.savePluginConfig();
+          if (this.rootEl) {
+            this.applyLayoutWidths(this.rootEl);
+          }
+          this.render();
+        },
+      );
+      ratioLockButton.toggleClass('pwm-button-success', !this.plugin.pluginConfig.columnRatioLocked);
+    }
 
     const modeToggleButton = this.plugin.createIconButton(
       footer,

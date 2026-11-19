@@ -261,77 +261,81 @@ export class PasswordManagerSettingTab extends PluginSettingTab {
           }),
       );
 
-    new Setting(containerEl)
-      .setName(PWM_TEXT.MODAL_SETTINGS_TITLE)
-      .setHeading();
+    // Phone manager uses a fixed, safe single-pane layout. These desktop and
+    // tablet controls would be saved but would not affect that layout.
+    if (!Platform.isPhone) {
+      new Setting(containerEl)
+        .setName(PWM_TEXT.MODAL_SETTINGS_TITLE)
+        .setHeading();
 
-    new Setting(containerEl)
-      .setName(PWM_TEXT.MODAL_WIDTH_SETTING)
-      .setDesc(PWM_TEXT.MODAL_WIDTH_SETTING_DESC)
-      .addText((text) =>
-        text
-          .setPlaceholder('92vw, 1200px')
-          .setValue(this.plugin.pluginConfig.modalWidthExpr)
-          .onChange(async (value) => {
-            this.plugin.updatePluginConfig({ modalWidthExpr: value });
+      new Setting(containerEl)
+        .setName(PWM_TEXT.MODAL_WIDTH_SETTING)
+        .setDesc(PWM_TEXT.MODAL_WIDTH_SETTING_DESC)
+        .addText((text) =>
+          text
+            .setPlaceholder('92vw, 1200px')
+            .setValue(this.plugin.pluginConfig.modalWidthExpr)
+            .onChange(async (value) => {
+              this.plugin.updatePluginConfig({ modalWidthExpr: value });
+              await this.plugin.savePluginConfig();
+              this.plugin.refreshManagerLayouts();
+            }),
+        );
+
+      new Setting(containerEl)
+        .setName(PWM_TEXT.MODAL_HEIGHT_SETTING)
+        .setDesc(PWM_TEXT.MODAL_HEIGHT_SETTING_DESC)
+        .addText((text) =>
+          text
+            .setPlaceholder('80vh, 800px')
+            .setValue(this.plugin.pluginConfig.modalHeightExpr)
+            .onChange(async (value) => {
+              this.plugin.updatePluginConfig({ modalHeightExpr: value });
+              await this.plugin.savePluginConfig();
+              this.plugin.refreshManagerLayouts();
+            }),
+        );
+
+      new Setting(containerEl)
+        .setName(PWM_TEXT.COLUMN_RATIO_SETTING)
+        .setDesc(PWM_TEXT.COLUMN_RATIO_SETTING_DESC)
+        .addText((text) => {
+          const applyColumnRatio = async () => {
+            this.plugin.updatePluginConfig({ columnRatioExpr: text.getValue() });
             await this.plugin.savePluginConfig();
             this.plugin.refreshManagerLayouts();
-          }),
-      );
+          };
 
-    new Setting(containerEl)
-      .setName(PWM_TEXT.MODAL_HEIGHT_SETTING)
-      .setDesc(PWM_TEXT.MODAL_HEIGHT_SETTING_DESC)
-      .addText((text) =>
-        text
-          .setPlaceholder('80vh, 800px')
-          .setValue(this.plugin.pluginConfig.modalHeightExpr)
-          .onChange(async (value) => {
-            this.plugin.updatePluginConfig({ modalHeightExpr: value });
-            await this.plugin.savePluginConfig();
-            this.plugin.refreshManagerLayouts();
-          }),
-      );
+          text
+            .setPlaceholder('1,1,2')
+            .setValue(this.plugin.pluginConfig.columnRatioExpr)
+            .onChange(async (value) => {
+              this.plugin.updatePluginConfig({ columnRatioExpr: value });
+              await this.plugin.savePluginConfig();
+              this.plugin.refreshManagerLayouts();
+            });
 
-    new Setting(containerEl)
-      .setName(PWM_TEXT.COLUMN_RATIO_SETTING)
-      .setDesc(PWM_TEXT.COLUMN_RATIO_SETTING_DESC)
-      .addText((text) => {
-        const applyColumnRatio = async () => {
-          this.plugin.updatePluginConfig({ columnRatioExpr: text.getValue() });
-          await this.plugin.savePluginConfig();
-          this.plugin.refreshManagerLayouts();
-        };
+          text.inputEl.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter') {
+              return;
+            }
 
-        text
-          .setPlaceholder('1,1,2')
-          .setValue(this.plugin.pluginConfig.columnRatioExpr)
-          .onChange(async (value) => {
-            this.plugin.updatePluginConfig({ columnRatioExpr: value });
-            await this.plugin.savePluginConfig();
-            this.plugin.refreshManagerLayouts();
+            event.preventDefault();
+            void applyColumnRatio();
           });
-
-        text.inputEl.addEventListener('keydown', (event) => {
-          if (event.key !== 'Enter') {
-            return;
-          }
-
-          event.preventDefault();
-          void applyColumnRatio();
+        })
+        .addExtraButton((button) => {
+          button.setIcon('reset');
+          button.setTooltip(PWM_TEXT.COLUMN_RATIO_RESET);
+          removeFromTabOrder(button.extraSettingsEl);
+          button.onClick(async () => {
+            this.plugin.updatePluginConfig({ columnRatioExpr: '1,1,2', columnRatioLocked: true });
+            await this.plugin.savePluginConfig();
+            this.plugin.refreshManagerLayouts();
+            this.display();
+          });
         });
-      })
-      .addExtraButton((button) => {
-        button.setIcon('reset');
-        button.setTooltip(PWM_TEXT.COLUMN_RATIO_RESET);
-        removeFromTabOrder(button.extraSettingsEl);
-        button.onClick(async () => {
-          this.plugin.updatePluginConfig({ columnRatioExpr: '1,1,2', columnRatioLocked: true });
-          await this.plugin.savePluginConfig();
-          this.plugin.refreshManagerLayouts();
-          this.display();
-        });
-      });
+    }
 
     new Setting(containerEl)
       .setName(PWM_TEXT.ENCRYPTION_SETTINGS_TITLE)
