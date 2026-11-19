@@ -44,6 +44,7 @@ const TRASH_ITEM_SORT_OPTIONS: Array<{ value: PwmSortMode; label: string }> = [
 const SORT_MENU_ICON = 'arrow-up-down';
 
 type PasswordManagerModalMode = 'default' | 'trash';
+type MobilePane = 'groups' | 'items' | 'details';
 
 type DetailFieldKey = 'title' | 'username' | 'password' | 'notes';
 type DetailFocusTarget = {
@@ -57,6 +58,9 @@ export class PasswordManagerModal extends Modal {
   private mode: PasswordManagerModalMode;
   private rootEl: HTMLDivElement | null = null;
   private activeResizeCleanup: (() => void) | null = null;
+  private viewportCleanup: (() => void) | null = null;
+  private isMobileViewportActive = false;
+  private mobilePane: MobilePane = 'groups';
   private selectedGroupId = '';
   private selectedItemId = '';
   private selectedGroupIds = new Set<string>();
@@ -118,6 +122,7 @@ export class PasswordManagerModal extends Modal {
     this.plugin.registerManagerModal(this);
     this.titleEl.setText(PWM_TEXT.MODAL_TITLE);
     applyPwmModalClass(this.modalEl);
+    this.observeViewportLayout();
     this.applyModalSize();
     this.contentEl.tabIndex = -1;
     this.ensureHeaderSearch();
@@ -130,6 +135,8 @@ export class PasswordManagerModal extends Modal {
     this.plugin.unregisterManagerModal(this);
     this.activeResizeCleanup?.();
     this.activeResizeCleanup = null;
+    this.viewportCleanup?.();
+    this.viewportCleanup = null;
     this.rootEl = null;
     void this.persistViewStateOnClose();
     this.searchInputEl?.remove();
@@ -162,6 +169,16 @@ export class PasswordManagerModal extends Modal {
   }
 
   private applyModalSize() {
+    if (this.isMobileViewport()) {
+      setCssProps(this.modalEl, {
+        width: 'calc(100vw - 16px)',
+        'max-width': 'calc(100vw - 16px)',
+        height: 'calc(100dvh - 16px)',
+        'max-height': 'calc(100dvh - 16px)',
+      });
+      return;
+    }
+
     const { modalWidthExpr, modalHeightExpr } = this.plugin.pluginConfig;
     setCssProps(this.modalEl, {
       width: this.toModalCssMinValue(modalWidthExpr),
@@ -169,6 +186,32 @@ export class PasswordManagerModal extends Modal {
       height: this.toModalCssMinValue(modalHeightExpr),
       'max-height': 'none',
     });
+  }
+
+  /** Viewport width is also reliable when Android reports a desktop-like platform. */
+  private isMobileViewport() {
+    return window.matchMedia('(max-width: 599px)').matches;
+  }
+
+  private observeViewportLayout() {
+    const mediaQuery = window.matchMedia('(max-width: 599px)');
+    const updateLayout = () => {
+      const isMobile = mediaQuery.matches;
+      if (isMobile && !this.isMobileViewportActive) {
+        // A phone always starts from the group index. Search is the one useful
+        // exception because the filtered group list is already the result view.
+        this.mobilePane = this.keyword.trim() ? 'items' : 'groups';
+      }
+      this.isMobileViewportActive = isMobile;
+      this.applyModalSize();
+      if (this.rootEl) {
+        this.render();
+      }
+    };
+
+    updateLayout();
+    mediaQuery.addEventListener('change', updateLayout);
+    this.viewportCleanup = () => mediaQuery.removeEventListener('change', updateLayout);
   }
 
   private toModalCssMinValue(value: string) {
@@ -242,6 +285,9 @@ export class PasswordManagerModal extends Modal {
     this.selectedItemId = this.getPreferredSelectedItemId(this.selectedGroupId);
     this.resetGroupSelection(this.selectedGroupId);
     this.resetItemSelection(this.selectedItemId);
+    if (this.isMobileViewport()) {
+      this.mobilePane = 'groups';
+    }
     this.reconcileSelectionState();
     void this.persistViewState();
     this.render();
@@ -422,11 +468,17 @@ export class PasswordManagerModal extends Modal {
 
     const root = this.contentEl.createDiv({ cls: 'pwm-root' });
     this.rootEl = root;
+    root.toggleClass('is-mobile-layout', this.isMobileViewport());
+    root.addClass(`pwm-mobile-pane-${this.mobilePane}`);
     this.applyLayoutWidths(root);
     const groupsColumn = root.createDiv({ cls: 'pwm-column pwm-groups-column' });
-    this.createResizeHandle(groupsColumn, 'group');
+    if (!this.isMobileViewport()) {
+      this.createResizeHandle(groupsColumn, 'group');
+    }
     const itemsColumn = root.createDiv({ cls: 'pwm-column pwm-items-column' });
-    this.createResizeHandle(itemsColumn, 'item');
+    if (!this.isMobileViewport()) {
+      this.createResizeHandle(itemsColumn, 'item');
+    }
     const detailsColumn = root.createDiv({ cls: 'pwm-column pwm-details-column' });
 
     this.renderGroups(groupsColumn);
@@ -554,6 +606,32 @@ export class PasswordManagerModal extends Modal {
     this.searchClearButtonEl?.toggleClass('is-hidden', !this.keyword.trim());
   }
 
+  private showMobilePane(pane: MobilePane) {
+    if (this.isMobileViewport()) {
+      this.mobilePane = pane;
+    }
+  }
+
+  private createMobileBackButton(container: HTMLElement, destination: MobilePane, label: string) {
+    const button = this.plugin.createIconButton(container, 'arrow-left', label, () => {
+      void this.navigateMobilePane(destination);
+    });
+    button.addClass('pwm-mobile-back-button');
+    button.createSpan({ cls: 'pwm-mobile-back-label', text: label });
+  }
+
+  private async navigateMobilePane(destination: MobilePane) {
+    if (!this.isMobileViewport()) {
+      return;
+    }
+    const saved = await this.flushSelectedItemDetailsBeforeNavigate();
+    if (!saved) {
+      return;
+    }
+    this.mobilePane = destination;
+    this.render();
+  }
+
   private updateTitleCount() {
     if (!this.titleCountEl) {
       return;
@@ -573,6 +651,7 @@ export class PasswordManagerModal extends Modal {
     this.selectedItemId = this.getPreferredSelectedItemId(this.selectedGroupId);
     this.resetGroupSelection(this.selectedGroupId);
     this.resetItemSelection(this.selectedItemId);
+    this.showMobilePane('groups');
     this.reconcileSelectionState();
     void this.persistViewState();
     this.render();
@@ -602,7 +681,25 @@ export class PasswordManagerModal extends Modal {
     title.createEl('h3', { text: PWM_TEXT.GROUPS });
 
     const actions = header.createDiv({ cls: 'pwm-actions' });
+    const mobileModeButton = this.plugin.createIconButton(
+      actions,
+      this.isTrashMode() ? 'arrow-left' : 'trash-2',
+      this.isTrashMode() ? PWM_TEXT.SWITCH_MANAGER : PWM_TEXT.OPEN_TRASH,
+      () => this.toggleMode(),
+    );
+    mobileModeButton.addClass('pwm-mobile-groups-action', this.isTrashMode() ? 'pwm-button-success' : 'pwm-button-warning');
+    const mobileSettingsButton = this.plugin.createIconButton(actions, 'settings', PWM_TEXT.OPEN_PLUGIN_SETTINGS, () => {
+      this.plugin.openSettings();
+    });
+    mobileSettingsButton.addClass('pwm-mobile-groups-action');
     if (!this.isTrashMode()) {
+      if (this.selectedGroupId) {
+        const renameButton = this.plugin.createIconButton(actions, 'pencil', PWM_TEXT.EDIT_GROUP_NAME, () => {
+          this.editingGroupId = this.selectedGroupId;
+          this.render();
+        });
+        renameButton.addClass('pwm-mobile-groups-action');
+      }
       this.plugin.createIconButton(actions, 'plus', PWM_TEXT.ADD_GROUP, async () => {
         const saved = await this.flushSelectedItemDetailsBeforeNavigate();
         if (!saved) {
@@ -641,7 +738,7 @@ export class PasswordManagerModal extends Modal {
 
     groups.forEach((group, index) => {
       const row = list.createDiv({ cls: 'pwm-list-item pwm-draggable-row pwm-group-row' });
-      row.draggable = !this.isTrashMode() && this.plugin.data.view.groupSort === 'custom' && !this.keyword;
+      row.draggable = !this.isMobileViewport() && !this.isTrashMode() && this.plugin.data.view.groupSort === 'custom' && !this.keyword;
       row.dataset.groupId = group.id;
       if (this.selectedGroupIds.has(group.id)) {
         row.addClass('is-selected');
@@ -833,6 +930,7 @@ export class PasswordManagerModal extends Modal {
     container.empty();
 
     const header = container.createDiv({ cls: 'pwm-header' });
+    this.createMobileBackButton(header, 'groups', PWM_TEXT.GROUPS);
     header.createEl('h3', { text: PWM_TEXT.ITEMS });
 
     const actions = header.createDiv({ cls: 'pwm-actions' });
@@ -853,6 +951,7 @@ export class PasswordManagerModal extends Modal {
         const item = this.plugin.createItem(this.selectedGroupId);
         this.selectedItemId = item.id;
         this.resetItemSelection(item.id);
+        this.showMobilePane('details');
         await this.plugin.savePluginData();
         this.render();
       });
@@ -889,7 +988,7 @@ export class PasswordManagerModal extends Modal {
     } else {
       items.forEach((item, index) => {
         const row = list.createDiv({ cls: 'pwm-list-item pwm-item-row pwm-draggable-row' });
-        row.draggable = !this.isTrashMode() && !this.keyword;
+        row.draggable = !this.isMobileViewport() && !this.isTrashMode() && !this.keyword;
         row.toggleClass('is-pinned', item.pinned);
         if (this.selectedItemIds.has(item.id)) {
           row.addClass('is-selected');
@@ -983,6 +1082,7 @@ export class PasswordManagerModal extends Modal {
             }
             this.selectedItemId = copiedItem.id;
             this.resetItemSelection(copiedItem.id);
+            this.showMobilePane('details');
             await this.plugin.savePluginData();
             new Notice(PWM_TEXT.COPIED_ITEM);
             this.render();
@@ -1051,6 +1151,7 @@ export class PasswordManagerModal extends Modal {
     this.detailsSaveButtonEl = null;
 
     const header = container.createDiv({ cls: 'pwm-header' });
+    this.createMobileBackButton(header, 'items', PWM_TEXT.ITEMS);
     header.createEl('h3', { text: PWM_TEXT.DETAILS });
     const actions = header.createDiv({ cls: 'pwm-actions' });
     this.plugin.createIconButton(actions, 'copy', PWM_TEXT.COPY_PASSWORD_INFO, async () => {
@@ -1758,6 +1859,7 @@ export class PasswordManagerModal extends Modal {
     this.selectedItemId = this.getPreferredSelectedItemId(groupId);
     this.resetGroupSelection(groupId);
     this.resetItemSelection(this.selectedItemId);
+    this.showMobilePane('items');
     void this.persistViewState();
     this.preserveScrollForNextRender();
     this.render();
@@ -1800,6 +1902,7 @@ export class PasswordManagerModal extends Modal {
 
     this.selectedItemId = itemId;
     this.resetItemSelection(itemId);
+    this.showMobilePane('details');
     void this.persistViewState();
     this.preserveScrollForNextRender();
     this.render();

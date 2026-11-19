@@ -1,7 +1,7 @@
 {
 	"id": "password-manager-android",
 	"name": "Password Manager Android",
-	"version": "1.0.14",
+	"version": "1.0.15",
 	"minAppVersion": "1.8.7",
 	"description": "A lightweight local password manager with encryption, backup, trash, and import/export support.",
 	"author": "TingHua1",

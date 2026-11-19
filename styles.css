@@ -517,3 +517,186 @@ body.pwm-column-resizing * {
   cursor: col-resize !important;
   user-select: none !important;
 }
+
+/* Phone navigation is a real single-pane flow; the state class is set by the
+   modal rather than merely concealing desktop columns. */
+.pwm-mobile-back-button,
+.pwm-mobile-groups-action {
+  display: none;
+}
+.pwm-mobile-back-label {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  .pwm-modal {
+    box-sizing: border-box;
+  }
+  .pwm-modal .modal-content,
+  .pwm-modal .modal-content > .pwm-root {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .pwm-modal-title-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-right: 40px;
+  }
+  .pwm-modal-title-row .modal-title {
+    max-width: calc(100% - 72px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pwm-modal-title-count {
+    margin-right: 0;
+  }
+  .pwm-modal-header-actions {
+    order: 3;
+    width: 100%;
+    max-width: none;
+    margin-right: 0;
+    gap: 4px;
+  }
+  .pwm-modal-header-search-wrap {
+    order: -1;
+    width: 100%;
+    flex: 1 0 100%;
+  }
+  .pwm-modal-header-search-icon {
+    display: none;
+  }
+  .pwm-modal-header-search {
+    min-height: 44px;
+  }
+  .pwm-modal-header-search-clear {
+    width: 40px;
+    height: 40px;
+  }
+  .pwm-root.is-mobile-layout {
+    display: block;
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .pwm-root.is-mobile-layout .pwm-column {
+    display: none;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .pwm-root.is-mobile-layout.pwm-mobile-pane-groups .pwm-groups-column,
+  .pwm-root.is-mobile-layout.pwm-mobile-pane-items .pwm-items-column,
+  .pwm-root.is-mobile-layout.pwm-mobile-pane-details .pwm-details-column {
+    display: flex;
+  }
+  .pwm-root.is-mobile-layout .pwm-resize-handle,
+  .pwm-root.is-mobile-layout .pwm-details-bottom-toolbar .pwm-icon-button:first-of-type {
+    display: none;
+  }
+  .pwm-mobile-back-button,
+  .pwm-mobile-groups-action {
+    display: inline-flex;
+  }
+  .pwm-mobile-back-button {
+    flex: 0 1 auto;
+    gap: 4px;
+    min-width: 44px;
+    width: auto;
+    margin: -8px 0 -8px -8px;
+  }
+  .pwm-mobile-back-label {
+    display: inline;
+    padding-right: 4px;
+    font-size: var(--font-ui-small);
+  }
+  .pwm-header {
+    min-height: 60px;
+    padding: 8px 12px;
+  }
+  .pwm-header h3 {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pwm-header .pwm-actions {
+    margin-left: auto;
+    gap: 2px;
+  }
+  .pwm-icon-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+  }
+  .pwm-list {
+    padding: 10px 8px;
+    overscroll-behavior: contain;
+  }
+  .pwm-list-item {
+    min-height: 56px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .pwm-column.pwm-items-column .pwm-list {
+    display: block;
+    max-height: none;
+    margin-bottom: 0;
+  }
+  .pwm-item-row {
+    min-height: 88px;
+    padding-right: 108px;
+  }
+  .pwm-item-row .pwm-item-row-actions-top,
+  .pwm-item-row .pwm-item-row-actions-bottom {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .pwm-item-row-actions-top,
+  .pwm-item-row-actions-bottom {
+    right: 6px;
+  }
+  .pwm-item-row-actions-top {
+    top: 4px;
+  }
+  .pwm-item-row-actions-bottom {
+    bottom: 4px;
+  }
+  .pwm-footer-actions {
+    gap: 4px;
+    padding: 8px;
+  }
+  .pwm-detail {
+    gap: 16px;
+    padding: 14px 12px;
+    overscroll-behavior: contain;
+  }
+  .pwm-field input,
+  .pwm-field textarea,
+  .pwm-field select {
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+  .pwm-field textarea {
+    min-height: 132px;
+  }
+  .pwm-input-row.has-floating-actions input {
+    padding-right: 106px;
+  }
+  .pwm-input-row.has-leading-icon.has-floating-actions input {
+    padding-right: 138px;
+  }
+  .pwm-floating-actions {
+    right: 2px;
+    gap: 0;
+  }
+  .pwm-tags-header .pwm-icon-button,
+  .pwm-field-header .pwm-icon-button {
+    flex: 0 0 44px;
+  }
+  .pwm-details-bottom-toolbar {
+    flex-wrap: nowrap;
+  }
+}
